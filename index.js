@@ -71,6 +71,8 @@ var clicked={
     down:"0"
 }
 var hit=0
+var collide=false
+var victim;
 //controls
 var lbtn=add([
     sprite('lbtn'),
@@ -109,7 +111,7 @@ onKeyPress('left',(g)=>{wa(0)})
 onKeyPress('right',(g)=>{wa(1)})
 onKeyPress('up',(g)=>{wa(2)})
 onKeyPress('down',(g)=>{wa(3)})
-onKeyPress('a',(g)=>{hit=1})
+onKeyPress('a',(g)=>{attack()})
 onKeyRelease(()=>{agamc()})
 // touch events
 onUpdate(()=>{
@@ -125,11 +127,9 @@ left()
                     if(clicked.down==1){
 down()
     }
-    if(hit==1){
 
 
-    }
-})
+})  
 
 onTouchStart((id,pos)=>{
 
@@ -171,7 +171,9 @@ function down(){
 }
 //attack and break functions
 function attack(){
-
+if(collide==true)
+victim.hurt(1)
+console.log('yesss');
 }
 //animation controller
 function wa(a){
@@ -200,20 +202,20 @@ for(var f=0;f<10000;f++){
     var randomxms=rand(0,-10000)
     var randomyms=rand(0,-10000)  
     if(ny==1){
-        var stone=add([
+        add([
             sprite('stone'),
             pos(randomxs,randomys),
             area(),
             scale(0.5),
-             offscreen({pause:true}),
+            // offscreen({hide:true}),
              'st'
         ])
-        var stone=add([
+        add([
             sprite('stone'),
             pos(randomxms,randomyms),
             area(),
             scale(0.5),
-             offscreen({pause:true}),
+            // offscreen({hide:true}),
              'st'
         ])  
     } 
@@ -228,6 +230,7 @@ var player=add([
     scale(2),
     area(),
    pos(center()),
+   anchor('center'),
     'jd'
 ])
 player.onUpdate(()=>{
@@ -238,37 +241,54 @@ player.onUpdate(()=>{
 
 //tree
 for(var e=0;e<10000;e++){
-    var yn=randi(0,20)
+    var yn=randi(10)
     var randomx=rand(0,10000)
-    var randomy=rand(0,10000)  
+    var randomy=rand(0,10000)
     var randomxm=rand(0,-10000)
-    var randomym=rand(0,-10000)  
-    if(yn==1){
-        // var tree=
-       add([
-            sprite('tree'),
-            pos(randomx,randomy),
-            area(),
-             offscreen({pause:true}),
-             health(6),
-             'tr'
-        ])
-      //  var tree=
-    //   add([
-    //         sprite('tree'),
-    //         pos(randomxm,randomym),
-    //         area(),
-    //          offscreen({pause:true}),
-    //          health(1),
-    //          'tr',
+    var randomym=rand(0,-10000)
 
-    //     ])  
-     } 
+        // var tree=
+if(yn==1){
+    add([
+        sprite('tree'),
+        pos(randomx,rand(randomym,randomy)),
+        area(),
+       offscreen({hide:true}),
+         health(3),
+         'tr'
+    ])
+  //  var tree=
+  add([
+    sprite('tree'),
+    pos(randomxm,rand(randomym,randomy)),
+    area(),
+     offscreen({hide:true}),
+     health(3),
+     'tr',
+
+]) 
+
+}
+
+     
       
     
 
 }
-
+player.onCollide('tr',(wtree)=>{
+    collide=true
+    victim=wtree
+    
+    })
+    player.onCollideEnd('tr',()=>{
+        collide=false
+    console.log('ended');
+        }) 
+    on('death','tr',(ad)=>{
+            destroy(ad)
+         
+            console.log("hdhdwhydjswkk")
+        })
 //controls
 var lbtn=add([
     sprite('lbtn'),
@@ -298,11 +318,6 @@ var ubtn=add([
     pos(95,height()-170),
     scale(0.5)
 ])
-player.onCollide('tr',(wtree)=>{
-    console.log('ejjjj')
-    wtree.hurt(1)
-    })
-    // tree.on('death',(ad)=>{
-    //     destroy(ad)
-    //     console.log("hdhdwhydjswkk")
-    // })
+
+
+   
