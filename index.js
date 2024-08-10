@@ -150,7 +150,7 @@ wa(0)
 onTouchEnd(()=>{
     clicked.left=0
     clicked.right=0
-    clicked.uo=0
+    clicked.up=0
     clicked.down=0
     agamc()
 })
