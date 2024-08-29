@@ -4,109 +4,30 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <script src="scripts/main.js" defer></script>
-    <script src="scripts/state.js" ></script>
-       <script src="scripts/attack.js" ></script>
-       <script src="scripts/pick.js" ></script>
-    <script src="scripts/player.js" ></script>
-    <script src="scripts/tree.js" ></script>
-    <script src="scripts/stone.js" ></script>
-     <script src="scripts/controls.js" ></script>
-     <script src="scripts/wood.js" ></script>
-     <script src="scripts/othercodes.js" ></script>
-     <script src="scripts/marketplace.js" ></script>
-     <script src="scripts/multiplayer.js" ></script>
+    <title>Main</title>
+    <script src="scripts/state.js" defer></script>
     <style>
         *{
-            margin :0;
-            overflow: hidden hidden;
+            margin: 0;
+            padding: 0;
         }
-        .controls{
-            position: fixed;
-            top: 60vh;
-            display: grid;
-            
-            grid-template-rows: 6vw 6vw 6vw;
-            grid-template-columns: 7vw 7vw 7vw;
-grid-template-areas: 
-'a up b'
-'left c right'
-'d down e';
-
-
+        body{
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            align-items: center;
+            gap:1vw
         }
-        /* img{
-          width:5vw;
-            -webkit-user-select:none;
-            -ms-user-select: none;
-            user-select: none;
-        
-        } */
-        canvas{
-            image-rendering: pixelated;
-            background-image: url("images/background.png");
+        button{
+            width:10vw;
+            height:10vh;
         }
-        #right{
-grid-area: right;
-width:100%;
-height: 100%;
-
-        }
-        #left{
-            grid-area: left;
-            width:100%;
-height: 100%;
-
-        }
-        #up{
-            grid-area: up;
-            width:100%;
-height: 100%;
-
-        }
-        #down{
-            grid-area: down;
-            width:100%;
-height: 100%;
-
-        }
-        #attack{
-            position: fixed;
-top:65vh;
-right: 10vw;
-width: 8vw;
-height:7vw;
-        }
-        #pick{
-            position: fixed;
-top:65vh;
-right: 3vw;
-width: 8vw;
-height:7vw;
-text-align: center; 
-        }
-
-        </style>
+    </style>
 </head>
 <body>
-    <canvas id="y"></canvas>
-    <div class="controls">
-        <img id="left" src="images/left.png"></img>
-        <img id="right" src="images/right.png"></img>
-        <img id="up" src="images/up.png"></img>
-        <img id="down" src="images/down.png"></img>
-     
-    </div>
-    <button id="pick">Pick</button>
-    <img id="attack" src="images/attack.png">Pick</img>
-        <!-- sprites -->
-        <img src="images/background.png" alt="" id="background" hidden>
-    <img src="images/tree.png" alt="" id="tree" hidden>
-    <img src="images/character.png" alt="" id="player" hidden>
-    <img src="images/stone.png" alt="" id="stone" hidden>
-    <img src="images/wood.png" alt="" id="wood" hidden>
-  <img src="images/mgrnd.png" alt="" id="mgrnd" hidden>
-  
+    <button id="sin" onclick="window.location='second.html?false';multiplayer=false;console.log(multiplayer)">SinglePlayer</button>
+    <button id="multi"  onclick="window.location='second.html?true';multiplayer=true;console.log(multiplayer)">MultiPlayer</button>
 </body>
 </html>
