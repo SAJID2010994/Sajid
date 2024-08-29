@@ -276,7 +276,7 @@ function ctrl() {
     if (controls.up==true) {
 // console.log('kdjdj');
       pyo-=10
-      set(ref(db,'Players/sajid'),{
+      set(ref(db,'Players/'+gamertage),{
         posx:pxo,
         posy:pyo
       })
@@ -290,7 +290,7 @@ function ctrl() {
       // wm('right')
       // ctx.translate(10,0)
       pxo-=10
-      set(ref(db,'Players/sajid'),{
+      set(ref(db,'Players/'+gamertage),{
         posx:pxo,
         posy:pyo
       })
@@ -306,7 +306,7 @@ function ctrl() {
       // tm('up')  
       // ctx.translate(0,-10)
       pyo+=10
-      set(ref(db,'Players/sajid'),{
+      set(ref(db,'Players/'+gamertage),{
         posx:pxo,
         posy:pyo
       })
@@ -323,7 +323,7 @@ function ctrl() {
       // tm('left')
       // ctx.translate(-10,0)
       pxo+=10
-      set(ref(db,'Players/sajid'),{
+      set(ref(db,'Players/'+gamertage),{
         posx:pxo,
         posy:pyo
       })
