@@ -1,6 +1,6 @@
 //imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import {getDatabase,ref,child,set,update,remove,get} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+import {getDatabase,ref,child,set,update,remove,get,onChildChanged,onValue} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
 var canva=document.getElementById('y')
 var ctx=canva.getContext('2d')
 canva.width=window.innerWidth
@@ -41,6 +41,7 @@ atkbtn.addEventListener('touchstart',()=>{
        
 })
 //variables
+var players={}
 let treec=0
 let treex=[]
 let treey=[]
@@ -575,19 +576,24 @@ if(window.location.search=='?true'){
    }
    
     })
-
+onValue(ref(db,'Players/'),(a)=>{
+  console.log(a.val());
+  players=a.val()
+})
        function multi(){
+         
   ctrl()
-         get(child(refDb,'Players/')).then(function(snap){
+    
           ctx.clearRect(-1000000,-1000000,5000000,5000000)
-           for(var i=0;i<Object.keys(snap.val()).length;i++){
-            var result = Object.keys(snap.val()).map((key) => [key, snap.val()[key]]);
-       
-            console.log(result[i][1]);
+           for(var i=0;i<Object.keys(players).length;i++){
+            var result = Object.keys(players).map((key) => [key, players[key]]);
+       console.log(result,'dfhdh');
+            // console.log(result);
+            ctx.fillText(result[i][0],result[i][1].posx+10,result[i][1].posy-2)
             ctx.drawImage(pl,0,0,51,55,result[i][1].posx,result[i][1].posy,50,50)
            }
             
-             })
+             
   requestAnimationFrame(multi)
        }
        multi()

@@ -40,3 +40,4 @@ let playerup=0
 let txt=0
 let treetest=[]
 let pt=0
+//random generates
