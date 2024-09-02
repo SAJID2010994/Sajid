@@ -86,6 +86,8 @@ let treetest=[]
 let pt=0
 let multiplayer=false
 let gamertage;
+let postx=0
+let posty=0
 // document.getElementById('c').style.top=`${window.innerHeight-200}vh`
 left.addEventListener('touchend', () => {
   controls.left = false
@@ -277,23 +279,30 @@ function ctrl() {
     if (controls.up==true) {
 // console.log('kdjdj');
       pyo-=10
+      posty-=10
+      ctx.translate(0,10)
       set(ref(db,'Players/'+gamertage),{
         posx:pxo,
-        posy:pyo
+        posy:pyo,
+        name:gamertage,
+        state:'up'
       })
     
   }
     
   
-    if (controls.left==true) {
+ else  if (controls.left==true) {
       // tm('right') 
       // sm('right')
       // wm('right')
-      // ctx.translate(10,0)
+      ctx.translate(10,0)
+      postx-=10
       pxo-=10
       set(ref(db,'Players/'+gamertage),{
         posx:pxo,
-        posy:pyo
+        posy:pyo,
+        name:gamertage,
+        state:'left'
       })
       // console.log(ctx.getTransform());
       // playerState.up=false 
@@ -303,13 +312,16 @@ function ctrl() {
       // playerState.idle=false 
 
   }
-    if (controls.down==true) {
+  else  if (controls.down==true) {
       // tm('up')  
-      // ctx.translate(0,-10)
+      ctx.translate(0,-10)
       pyo+=10
+      posty+=10
       set(ref(db,'Players/'+gamertage),{
         posx:pxo,
-        posy:pyo
+        posy:pyo,
+        name:gamertage,
+        state:'down'
       })
       // sm('up')
       // wm('up')
@@ -320,13 +332,16 @@ function ctrl() {
       // playerState.idle=false
 
   }
-    if (controls.right==true) {
+  else  if (controls.right==true) {
       // tm('left')
-      // ctx.translate(-10,0)
+      ctx.translate(-10,0)
       pxo+=10
+      postx+=10
       set(ref(db,'Players/'+gamertage),{
         posx:pxo,
-        posy:pyo
+        posy:pyo,
+        name:gamertage,
+        state:'right'
       })
       // sm('left') 
       // wm('left') 
@@ -338,6 +353,14 @@ function ctrl() {
     
  
   }
+  else{
+    set(ref(db,'Players/'+gamertage),{
+      posx:pxo,
+      posy:pyo,
+      name:gamertage,
+      state:'idle'
+    })
+  }
   }
   if(multiplayer==false){
     if (controls.up==true) {
@@ -346,6 +369,7 @@ function ctrl() {
       // wm('down')
       ctx.translate(0,10)
       pyo-=10
+      posty-=10
       // console.log(ctx.getTransform());
       playerState.up=true 
       playerState.down=false
@@ -360,6 +384,7 @@ function ctrl() {
       // wm('right')
       ctx.translate(10,0)
       pxo-=10
+      postx-=10
     
       // console.log(ctx.getTransform());
       playerState.up=false 
@@ -373,6 +398,7 @@ function ctrl() {
       // tm('up')  
       ctx.translate(0,-10)
       pyo+=10
+      posty+=10
 
       // sm('up')
       // wm('up')
@@ -387,6 +413,7 @@ function ctrl() {
       // tm('left')
       ctx.translate(-10,0)
       pxo+=10
+      postx+=10
 
       // sm('left') 
       // wm('left') 
@@ -466,7 +493,57 @@ function pick() {
 //players
 
 function player() {
-  if(playerState.idle==true){
+  if(multiplayer==true){
+    for(var i=0;i<Object.keys(players).length;i++){
+      var result = Object.keys(players).map((key) => [key, players[key]]);
+      console.log(result[i][1].state);
+      ctx.fillText(result[i][0],result[i][1].posx+10,result[i][1].posy-2)
+      switch (result[i][1].state) {
+        case 'idle':
+          if(idle_time==30){
+            idle=0
+            idle_time=0
+        }
+                if(idle==0){ ctx.drawImage(pl,0,0,51,55,result[i][1].posx,result[i][1].posy,50,50)}
+          break;
+          case 'left':
+            gameFrame++
+            if(gameFrame % animation_time == 0){
+              if(paframe<2) paframe++
+              else paframe=0
+            }
+            ctx.drawImage(pl,51*(paframe),55,51,55,result[i][1].posx,result[i][1].posy,50,50)
+            break;
+            case 'right':
+              gameFrame++
+              console.log('fvjd');
+              if(gameFrame % animation_time == 0){
+                if(paframe<2) paframe++
+                else paframe=0
+              }
+              ctx.drawImage(pl,51*(paframe),55*2,51,55,result[i][1].posx,result[i][1].posy,50,50)
+              break;
+              case 'up':
+                gameFrame++
+                if(gameFrame % animation_time == 0){
+                  if(paframe<2) paframe++
+                  else paframe=0
+                }
+                ctx.drawImage(pl,51*(paframe),55*3,51,55,result[i][1].posx,result[i][1].posy,50,50)
+              break;
+              case 'down':
+                gameFrame++
+                if(gameFrame % animation_time == 0){
+                  if(paframe<2) paframe++
+                  else paframe=0
+                }
+                ctx.drawImage(pl,51*(paframe),0,51,55,result[i][1].posx,result[i][1].posy,50,50)
+              break;
+      }
+     }
+  }
+  if(multiplayer==false){
+    if(playerState.idle==true){
       if(idle_time==30){
           idle=0
           idle_time=0
@@ -506,7 +583,7 @@ if(gameFrame % animation_time == 0){
 }
 ctx.drawImage(pl,51*(paframe),0,51,55,pxo,pyo,50,50)
 }
-
+  }
   }
 //attack
 function attack() {
@@ -561,10 +638,6 @@ read(){
 }
 let server=new database()
  console.log(server.read());
- set(ref(db,'Players/mahadi'),{
-  posx:100,
-  posy:500
-})
 //  ctx.imageSmoothingEnabled=false;
 if(window.location.search=='?true'){
   multiplayer=true
@@ -574,26 +647,22 @@ if(window.location.search=='?true'){
    if(snap.exists()){console.log(snap.val())}else{ 
      server.write(0,0)
    }
-   
     })
+    get(child(refDb,'Players')).then(function(snap){
+      players=snap.val()
+       })
 onValue(ref(db,'Players/'),(a)=>{
+  let hh=a.val().name
   console.log(a.val());
   players=a.val()
 })
        function multi(){
-         
   ctrl()
-    
-          ctx.clearRect(-1000000,-1000000,5000000,5000000)
-           for(var i=0;i<Object.keys(players).length;i++){
-            var result = Object.keys(players).map((key) => [key, players[key]]);
-       console.log(result,'dfhdh');
-            // console.log(result);
-            ctx.fillText(result[i][0],result[i][1].posx+10,result[i][1].posy-2)
-            ctx.drawImage(pl,0,0,51,55,result[i][1].posx,result[i][1].posy,50,50)
-           }
-            
-             
+ 
+
+          ctx.clearRect(-1000000,-1000000,5000000,5000000) 
+          ctx.fillText(`PosX:${pxo} PosY:${pyo}`,postx+40,posty+50)
+          player()
   requestAnimationFrame(multi)
        }
        multi()
@@ -601,6 +670,8 @@ onValue(ref(db,'Players/'),(a)=>{
   function main(){
     pickbtn.setAttribute('hidden','')     
     ctx.clearRect(-1000000,-1000000,5000000,5000000)
+    ctx.fillText(`Planks:${itemsCount.planks}`,postx+40,posty+50)
+    ctx.fillText(`Stones:${itemsCount.stones}`,pxo-300,pyo-250)
     console.log(multiplayer);
     ctrl()
     stone()
