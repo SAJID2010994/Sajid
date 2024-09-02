@@ -284,7 +284,6 @@ function ctrl() {
         posx:pxo,
         posy:pyo,
         name:gamertage,
-        health:10,
         state:'up'
       })
     
@@ -497,8 +496,53 @@ function player() {
     for(var i=0;i<Object.keys(players).length;i++){
       var result = Object.keys(players).map((key) => [key, players[key]]);
 
-      ctx.fillText(result[i][0],result[i][1].posx+10,result[i][1].posy-2)
-      if(result[i][1].posx<canva.width &&result[i][1].posx>-2 &&result[i][1].posy<canva.height && result[i][1].posy>-2){
+ 
+      if(result[i][0]==gamertage){
+        ctx.fillText(result[i][0],result[i][1].posx+10,result[i][1].posy-2)
+        switch (result[i][1].state) {
+          case 'idle':
+            if(idle_time==30){
+              idle=0
+              idle_time=0
+          }
+                  if(idle==0){ ctx.drawImage(pl,0,0,51,55,result[i][1].posx,result[i][1].posy,50,50)}
+            break;
+            case 'left':
+              gameFrame++
+              if(gameFrame % animation_time == 0){
+                if(paframe<2) paframe++
+                else paframe=0
+              }
+              ctx.drawImage(pl,51*(paframe),55,51,55,result[i][1].posx,result[i][1].posy,50,50)
+              break;
+              case 'right':
+                gameFrame++
+                if(gameFrame % animation_time == 0){
+                  if(paframe<2) paframe++
+                  else paframe=0
+                }
+                ctx.drawImage(pl,51*(paframe),55*2,51,55,result[i][1].posx,result[i][1].posy,50,50)
+                break;
+                case 'up':
+                  gameFrame++
+                  if(gameFrame % animation_time == 0){
+                    if(paframe<2) paframe++
+                    else paframe=0
+                  }
+                  ctx.drawImage(pl,51*(paframe),55*3,51,55,result[i][1].posx,result[i][1].posy,50,50)
+                break;
+                case 'down':
+                  gameFrame++
+                  if(gameFrame % animation_time == 0){
+                    if(paframe<2) paframe++
+                    else paframe=0
+                  }
+                  ctx.drawImage(pl,51*(paframe),0,51,55,result[i][1].posx,result[i][1].posy,50,50)
+                break;
+        }
+      }
+      else if(result[i][1].posx<canva.width && result[i][1].posx>-10 &&result[i][1].posy<canva.height && result[i][1].posy>-10){
+        ctx.fillText(result[i][0],result[i][1].posx+10,result[i][1].posy-2)
         switch (result[i][1].state) {
           case 'idle':
             if(idle_time==30){
@@ -608,7 +652,7 @@ if(multiplayer==true){
       if(result[i][0]!=gamertage){
         
         if(pxo < result[i][1].posx+50 && pxo+50 > result[i][1].posx && pyo < result[i][1].posy+50 && pyo+50 > result[i][1].posy){
-          console.log('fjdj');
+          
           update(ref(db,'Players/'+result[i][0]),{
             attc:true
           })
@@ -648,9 +692,9 @@ write(px,py,stat,h,at){
     posx:px,
     posy:py,
     state:stat,
-    health:h,
-    attc:at
+    health:3
   })
+  console.log('dj');
 }
 read(){
  get(child(refDb,'Players/mahadi')).then(function(snap){
@@ -667,7 +711,11 @@ if(window.location.search=='?true'){
   //startup
   get(child(refDb,'Players/'+gamertage)).then(function(snap){
    if(snap.exists()){console.log(snap.val())}else{ 
-     server.write(0,0,'idle',3,false)
+    set(ref(db,'Players/'+gamertage),{
+      posx:0,
+      posy:0,
+      state:'idle',
+    })
    }
     })
     get(child(refDb,'Players')).then(function(snap){
@@ -678,7 +726,12 @@ onValue(ref(db,'Players/'),(a)=>{
   players=a.val()
 })
        function multi(){
-         if(players[gamertage].attc==false){ctrl()} 
+      ctrl()
+        if(players[gamertage]){
+          if(players[gamertage].attc==true){
+            alert("You are dead !You can't rejoin fool ! (-:")
+          }
+        }
 
           ctx.clearRect(-1000000,-1000000,5000000,5000000) 
           ctx.fillText(`PosX:${pxo} PosY:${pyo}`,postx+40,posty+50)
