@@ -13,8 +13,8 @@ var atkbtn=document.getElementById('attack')
 var pickbtn=document.getElementById('pick')
 let playerx = canva.width / 2
 let playery = canva.height / 2
-let pxo=canva.width / 2
-let pyo=canva.height / 2
+let pxo=0
+let pyo=0
 var atkc=1
 var plc=1
 left.addEventListener('touchstart',()=>{
@@ -239,7 +239,9 @@ window.onkeypress=b=>{
   }
 
   if (b.key=='p') {
-  
+    console.log(ctx.getTransform());
+    console.log(postx);
+  ctx.translate(10,0)
       trc=1
   }
 }
@@ -274,6 +276,7 @@ if (b.key=='p') {
 }
 
 function ctrl() {
+  if(pxo)
   if(multiplayer==true){
     
     if (controls.up==true) {
@@ -541,7 +544,7 @@ function player() {
                 break;
         }
       }
-      else if(result[i][1].posx<canva.width && result[i][1].posx>-10 &&result[i][1].posy<canva.height && result[i][1].posy>-10){
+      else if(result[i][1].posx<canva.width+pxo && result[i][1].posx>-10-pxo &&result[i][1].posy<canva.height+pyo && result[i][1].posy>-(window.innerHeight-pyo)){
         ctx.fillText(result[i][0],result[i][1].posx+10,result[i][1].posy-2)
         switch (result[i][1].state) {
           case 'idle':
@@ -648,7 +651,7 @@ if(multiplayer==true){
   //player
   for(var i=0;i<Object.keys(players).length;i++){
     var result = Object.keys(players).map((key) => [key, players[key]]);
-    if(result[i][1].posx<canva.width && result[i][1].posx>-2 &&result[i][1].posy<canva.height && result[i][1].posy>-2){
+    if(result[i][1].posx<canva.width+pxo && result[i][1].posx>-10-pxo &&result[i][1].posy<canva.height+pyo && result[i][1].posy>-(window.innerHeight-pyo)){
       if(result[i][0]!=gamertage){
         
         if(pxo < result[i][1].posx+50 && pxo+50 > result[i][1].posx && pyo < result[i][1].posy+50 && pyo+50 > result[i][1].posy){
@@ -710,7 +713,15 @@ if(window.location.search=='?true'){
   gamertage=prompt('Enter your gamertage !','')
   //startup
   get(child(refDb,'Players/'+gamertage)).then(function(snap){
-   if(snap.exists()){console.log(snap.val())}else{ 
+   if(snap.exists()){ 
+     ctx.translate(-snap.val().posx+window.innerWidth/2,-snap.val().posy+window.innerHeight/2)
+     postx=ctx.getTransform().e*-1
+     posty=ctx.getTransform().f*-1
+    pxo=snap.val().posx
+    pyo=snap.val().posy
+  }else{
+     pxo=canva.width / 2
+ pyo=canva.height / 2
     set(ref(db,'Players/'+gamertage),{
       posx:0,
       posy:0,
