@@ -277,14 +277,14 @@ function ctrl() {
   if(multiplayer==true){
     
     if (controls.up==true) {
-// console.log('kdjdj');
       pyo-=10
       posty-=10
       ctx.translate(0,10)
-      set(ref(db,'Players/'+gamertage),{
+      update(ref(db,'Players/'+gamertage),{
         posx:pxo,
         posy:pyo,
         name:gamertage,
+        health:10,
         state:'up'
       })
     
@@ -298,7 +298,7 @@ function ctrl() {
       ctx.translate(10,0)
       postx-=10
       pxo-=10
-      set(ref(db,'Players/'+gamertage),{
+      update(ref(db,'Players/'+gamertage),{
         posx:pxo,
         posy:pyo,
         name:gamertage,
@@ -317,7 +317,7 @@ function ctrl() {
       ctx.translate(0,-10)
       pyo+=10
       posty+=10
-      set(ref(db,'Players/'+gamertage),{
+      update(ref(db,'Players/'+gamertage),{
         posx:pxo,
         posy:pyo,
         name:gamertage,
@@ -337,7 +337,7 @@ function ctrl() {
       ctx.translate(-10,0)
       pxo+=10
       postx+=10
-      set(ref(db,'Players/'+gamertage),{
+      update(ref(db,'Players/'+gamertage),{
         posx:pxo,
         posy:pyo,
         name:gamertage,
@@ -354,7 +354,7 @@ function ctrl() {
  
   }
   else{
-    set(ref(db,'Players/'+gamertage),{
+    update(ref(db,'Players/'+gamertage),{
       posx:pxo,
       posy:pyo,
       name:gamertage,
@@ -466,7 +466,7 @@ for(var a=0;a<stl;a++){
 //pick
 function pick() {
   //stone
-  console.log('sre v');
+
   for(var a=0;a<stl;a++){
       if(stonex[a]<canva.width && stonex[a]>-2 && stoney[a]<canva.height && stoney[a]>-2){
           if(playerx < stonex[a]+20 && playerx+34 > stonex[a] && playery < stoney[a]+-1 && playery+70 > stoney[a]){
@@ -481,7 +481,7 @@ function pick() {
       if(playerx < woodx[a]+20 && playerx+34 > woodx[a] && playery+70 > woody[a]){
         
           if(playerx < woodx[a]+50 && playerx+34 > woodx[a] && playery < woody[a]+10 && playery+70 > woody[a]){
-            console.log('ss')
+          
   woodc--
    woodx.splice(a,1)
    woody.splice(a,1)
@@ -496,49 +496,50 @@ function player() {
   if(multiplayer==true){
     for(var i=0;i<Object.keys(players).length;i++){
       var result = Object.keys(players).map((key) => [key, players[key]]);
-      console.log(result[i][1].state);
+
       ctx.fillText(result[i][0],result[i][1].posx+10,result[i][1].posy-2)
-      switch (result[i][1].state) {
-        case 'idle':
-          if(idle_time==30){
-            idle=0
-            idle_time=0
-        }
-                if(idle==0){ ctx.drawImage(pl,0,0,51,55,result[i][1].posx,result[i][1].posy,50,50)}
-          break;
-          case 'left':
-            gameFrame++
-            if(gameFrame % animation_time == 0){
-              if(paframe<2) paframe++
-              else paframe=0
-            }
-            ctx.drawImage(pl,51*(paframe),55,51,55,result[i][1].posx,result[i][1].posy,50,50)
+      if(result[i][1].posx<canva.width &&result[i][1].posx>-2 &&result[i][1].posy<canva.height && result[i][1].posy>-2){
+        switch (result[i][1].state) {
+          case 'idle':
+            if(idle_time==30){
+              idle=0
+              idle_time=0
+          }
+                  if(idle==0){ ctx.drawImage(pl,0,0,51,55,result[i][1].posx,result[i][1].posy,50,50)}
             break;
-            case 'right':
+            case 'left':
               gameFrame++
-              console.log('fvjd');
               if(gameFrame % animation_time == 0){
                 if(paframe<2) paframe++
                 else paframe=0
               }
-              ctx.drawImage(pl,51*(paframe),55*2,51,55,result[i][1].posx,result[i][1].posy,50,50)
+              ctx.drawImage(pl,51*(paframe),55,51,55,result[i][1].posx,result[i][1].posy,50,50)
               break;
-              case 'up':
+              case 'right':
                 gameFrame++
                 if(gameFrame % animation_time == 0){
                   if(paframe<2) paframe++
                   else paframe=0
                 }
-                ctx.drawImage(pl,51*(paframe),55*3,51,55,result[i][1].posx,result[i][1].posy,50,50)
-              break;
-              case 'down':
-                gameFrame++
-                if(gameFrame % animation_time == 0){
-                  if(paframe<2) paframe++
-                  else paframe=0
-                }
-                ctx.drawImage(pl,51*(paframe),0,51,55,result[i][1].posx,result[i][1].posy,50,50)
-              break;
+                ctx.drawImage(pl,51*(paframe),55*2,51,55,result[i][1].posx,result[i][1].posy,50,50)
+                break;
+                case 'up':
+                  gameFrame++
+                  if(gameFrame % animation_time == 0){
+                    if(paframe<2) paframe++
+                    else paframe=0
+                  }
+                  ctx.drawImage(pl,51*(paframe),55*3,51,55,result[i][1].posx,result[i][1].posy,50,50)
+                break;
+                case 'down':
+                  gameFrame++
+                  if(gameFrame % animation_time == 0){
+                    if(paframe<2) paframe++
+                    else paframe=0
+                  }
+                  ctx.drawImage(pl,51*(paframe),0,51,55,result[i][1].posx,result[i][1].posy,50,50)
+                break;
+        }
       }
      }
   }
@@ -587,17 +588,35 @@ ctx.drawImage(pl,51*(paframe),0,51,55,pxo,pyo,50,50)
   }
 //attack
 function attack() {
-  var ctxx=ctx.getTransform().e
-  var ctxy=ctx.getTransform().f
-  //tree
-  console.log('ajskj');
-  for(var a=0;a<ttl;a++){
-      if(treex[a]+ctxx<canva.width && treex[a]+ctxx>-2 && treey[a]+ctxy<canva.height && treey[a]+ctxy>-2){
-          if(playerx < treex[a]+ctxx+40 && playerx+34 > treex[a]+ctxx && playery < treey[a]+ctxy+70 && playery+55 > treey[a]+ctxy){
-              tree_health[a]--
-           }}
-      
+  if(multiplayer==false){
+    var ctxx=ctx.getTransform().e
+    var ctxy=ctx.getTransform().f
+    //tree
+    for(var a=0;a<ttl;a++){
+        if(treex[a]+ctxx<canva.width && treex[a]+ctxx>-2 && treey[a]+ctxy<canva.height && treey[a]+ctxy>-2){
+            if(playerx < treex[a]+ctxx+40 && playerx+34 > treex[a]+ctxx && playery < treey[a]+ctxy+70 && playery+55 > treey[a]+ctxy){
+                tree_health[a]-- 
+             }}
+        
+    }
   }
+if(multiplayer==true){
+  //player
+  for(var i=0;i<Object.keys(players).length;i++){
+    var result = Object.keys(players).map((key) => [key, players[key]]);
+    if(result[i][1].posx<canva.width && result[i][1].posx>-2 &&result[i][1].posy<canva.height && result[i][1].posy>-2){
+      if(result[i][0]!=gamertage){
+        
+        if(pxo < result[i][1].posx+50 && pxo+50 > result[i][1].posx && pyo < result[i][1].posy+50 && pyo+50 > result[i][1].posy){
+          console.log('fjdj');
+          update(ref(db,'Players/'+result[i][0]),{
+            attc:true
+          })
+        }
+      }
+    }
+   }
+}
 }
 //adding sprites
 var tr=document.getElementById('tree')
@@ -624,10 +643,13 @@ let db=getDatabase()
 let refDb=ref(db)
 let abv=0
 class database{
-write(px,py){
+write(px,py,stat,h,at){
   set(ref(db,'Players/'+gamertage),{
     posx:px,
-    posy:py
+    posy:py,
+    state:stat,
+    health:h,
+    attc:at
   })
 }
 read(){
@@ -637,7 +659,7 @@ read(){
 }
 }
 let server=new database()
- console.log(server.read());
+
 //  ctx.imageSmoothingEnabled=false;
 if(window.location.search=='?true'){
   multiplayer=true
@@ -645,7 +667,7 @@ if(window.location.search=='?true'){
   //startup
   get(child(refDb,'Players/'+gamertage)).then(function(snap){
    if(snap.exists()){console.log(snap.val())}else{ 
-     server.write(0,0)
+     server.write(0,0,'idle',3,false)
    }
     })
     get(child(refDb,'Players')).then(function(snap){
@@ -653,12 +675,10 @@ if(window.location.search=='?true'){
        })
 onValue(ref(db,'Players/'),(a)=>{
   let hh=a.val().name
-  console.log(a.val());
   players=a.val()
 })
        function multi(){
-  ctrl()
- 
+         if(players[gamertage].attc==false){ctrl()} 
 
           ctx.clearRect(-1000000,-1000000,5000000,5000000) 
           ctx.fillText(`PosX:${pxo} PosY:${pyo}`,postx+40,posty+50)
@@ -672,7 +692,7 @@ onValue(ref(db,'Players/'),(a)=>{
     ctx.clearRect(-1000000,-1000000,5000000,5000000)
     ctx.fillText(`Planks:${itemsCount.planks}`,postx+40,posty+50)
     ctx.fillText(`Stones:${itemsCount.stones}`,pxo-300,pyo-250)
-    console.log(multiplayer);
+ 
     ctrl()
     stone()
     wood()
@@ -682,5 +702,4 @@ onValue(ref(db,'Players/'),(a)=>{
         }
         main()
 }
-
 
