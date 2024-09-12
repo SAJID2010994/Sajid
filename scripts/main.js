@@ -1,8 +1,9 @@
 //imports
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import {getDatabase,ref,child,set,update,remove,get,onChildChanged,onValue} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js"
+import {getDatabase,ref,child,set,update,remove,get,onChildChanged,onValue} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js"
 var canva=document.getElementById('y')
-var ctx=canva.getContext('2d')
+var ctx=canva.getContext('2d','alpha:false')
+ctx.imageSmoothingEnabled=false
 canva.width=window.innerWidth
 canva.height=window.innerHeight
 var left=document.getElementById('left')
@@ -17,6 +18,19 @@ let pxo=0
 let pyo=0
 var atkc=1
 var plc=1
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDhHoaC7-scyj9D1mLflGx9kq3-nNlnCoA",
+  authDomain: "game-7fbdb.firebaseapp.com",
+  databaseURL: "https://game-7fbdb-default-rtdb.firebaseio.com",
+  projectId: "game-7fbdb",
+  storageBucket: "game-7fbdb.appspot.com",
+  messagingSenderId: "637092416990",
+  appId: "1:637092416990:web:51b8f2c03d6d57093ae14f"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 left.addEventListener('touchstart',()=>{
     controls.left=true
 })
@@ -64,6 +78,7 @@ let controls={
     down:false,
     release:false,
 }
+let chi=false
 let paframe=0
 let left_animation_time=30
 let gameFrame=0
@@ -88,6 +103,9 @@ let multiplayer=false
 let gamertage;
 let postx=0
 let posty=0
+var ctxx=ctx.getTransform().e
+var ctxy=ctx.getTransform().f
+let health=10
 // document.getElementById('c').style.top=`${window.innerHeight-200}vh`
 left.addEventListener('touchend', () => {
   controls.left = false
@@ -140,231 +158,230 @@ pickbtn.addEventListener('touchend', () => {
 // playerState.right=false
 // playerState.left=false
 // playerState.idle=true
-// controls.release=true
+// controls.release=true 
 // })
-
-console.log(ctx);
-//wood function
-function wood() {
-  var ctxx=ctx.getTransform().e
-  var ctxy=ctx.getTransform().f
-  let wooda=woodx.length
-    for(var a=0;a<wooda;a++){
-        if(woodx[a]+ctxx<canva.width && woodx[a]+ctxx>-2 && woody[a]+ctxy<canva.height && woody[a]+ctxy>-2){ 
-          if (playerx < woodx[a]+ctxx+ 50 && playerx +  34> woodx[a] +ctxx&& playery > woody[a]+ctxy-5 &&  playery < woody[a]+ctxy+40) {
-            pickbtn.removeAttribute('hidden')
-            if (trc==1) {  
-              woodc--
-              woodx.splice(a, 1)
-              woody.splice(a, 1)
-              itemsCount.planks += 1
+let db=getDatabase()
+let refDb=ref(db)
+let abv=0
+function checkCollision(aposx,aposy,awidth,aheight,bposx,bposy,bwidth,bheight){
+  if(aposx > bposx+bwidth || aposx+awidth < bposx || aposy>bposy+bheight ||aposy+aheight<bposy){
+    return false;
+  }else{
+  return true;
+}}
+let ctrl=()=>{}
+let player=()=>{}
+let attack=()=>{}
+if(window.location.search=='?true'){
+  ctrl=()=>{
+        if (controls.up==true) {
+          pyo-=10
+          posty-=10
+          ctx.translate(0,10)
+          update(ref(db,'Players/'+gamertage),{
+            posx:pxo,
+            posy:pyo,
+            name:gamertage,
+            state:'up'
+          })
+        
+      }
+     else  if (controls.left==true) {
+          // tm('right') 
+          // sm('right')
+          // wm('right')
+          ctx.translate(10,0)
+          postx-=10
+          pxo-=10
+          update(ref(db,'Players/'+gamertage),{
+            posx:pxo,
+            posy:pyo,
+            name:gamertage,
+            state:'left'
+          })
+          // console.log(ctx.getTransform());
+          // playerState.up=false 
+          // playerState.down=false
+          // playerState.right=false
+          // playerState.left=true
+          // playerState.idle=false 
+    
+      }
+      else  if (controls.down==true) {
+          // tm('up')  
+          ctx.translate(0,-10)
+          pyo+=10
+          posty+=10
+          update(ref(db,'Players/'+gamertage),{
+            posx:pxo,
+            posy:pyo,
+            name:gamertage,
+            state:'down'
+          })
+          // sm('up')
+          // wm('up')
+          // playerState.up=false 
+          // playerState.down=true
+          // playerState.right=false
+          // playerState.left=false
+          // playerState.idle=false
+    
+      }
+      else  if (controls.right==true) {
+          // tm('left')
+          ctx.translate(-10,0)
+          pxo+=10
+          postx+=10
+          update(ref(db,'Players/'+gamertage),{
+            posx:pxo,
+            posy:pyo,
+            name:gamertage,
+            state:'right'
+          })
+          // sm('left') 
+          // wm('left') 
+          //         playerState.up=false 
+          // playerState.down=false
+          // playerState.right=true
+          // playerState.left=false
+          // playerState.idle=false
+        
+     
+      }
+      else{
+              update(ref(db,'Players/'+gamertage),{
+            posx:pxo,
+            posy:pyo,
+            name:gamertage,
+            state:'idle'
+          })   
+      }
+  }
+  player=()=>{
+      for(var i=0;i<Object.keys(players).length;i++){
+        var result = Object.keys(players).map((key) => [key, players[key]]);
+        if(result[i][0]==gamertage){
+          ctx.fillText(result[i][0],result[i][1].posx+10,result[i][1].posy-2)
+          switch (result[i][1].state) {
+            case 'idle':
+              if(idle_time==30){
+                idle=0
+                idle_time=0
+            }
+                    if(idle==0){ ctx.drawImage(pl,0,0,51,55,result[i][1].posx,result[i][1].posy,50,50)}
+              break;
+              case 'left':
+                gameFrame++
+                if(gameFrame % animation_time == 0){
+                  if(paframe<2) paframe++
+                  else paframe=0
+                }
+                ctx.drawImage(pl,51*(paframe),55,51,55,result[i][1].posx,result[i][1].posy,50,50)
+                break;
+                case 'right':
+                  gameFrame++
+                  if(gameFrame % animation_time == 0){
+                    if(paframe<2) paframe++
+                    else paframe=0
+                  }
+                  ctx.drawImage(pl,51*(paframe),55*2,51,55,result[i][1].posx,result[i][1].posy,50,50)
+                  break;
+                  case 'up':
+                    gameFrame++
+                    if(gameFrame % animation_time == 0){
+                      if(paframe<2) paframe++
+                      else paframe=0
+                    }
+                    ctx.drawImage(pl,51*(paframe),55*3,51,55,result[i][1].posx,result[i][1].posy,50,50)
+                  break;
+                  case 'down':
+                    gameFrame++
+                    if(gameFrame % animation_time == 0){
+                      if(paframe<2) paframe++
+                      else paframe=0
+                    }
+                    ctx.drawImage(pl,51*(paframe),0,51,55,result[i][1].posx,result[i][1].posy,50,50)
+                  break;
+                  }
+                  if(players[gamertage].attacked){
+                    if(players[gamertage].attacked=="true"){
+                      ctx.translate(30,0)
+                      postx-=30
+                      pxo-=30
+                      update(ref(db,'Players/'+gamertage),{
+                        posx:pxo,
+                        name:gamertage
+                      })
+                      // ctx.drawImage(pl,0,0,51,55,result[i][1].posx,result[i][1].posy,50,50)
             }
           }
-        
-            ctx.drawImage(wd,woodx[a],woody[a],70,80)
-         }
-    }
-}
-//tree function
-treec=20000//Math.floor(Math.random()*50000)+1
-
-let amm=0
-
-for(var i=0;i<treec;i++){
-   
-   var py=Math.floor(Math.random()*80000)
-var ny=Math.floor(Math.random()*-80000)-1
-tree_health.push(2)
-treex.push(Math.floor(Math.random()*80000))
-treey.push(Math.floor(Math.random()*py+Math.random()*ny))
-
-tree_health.push(2)
-treex.push(Math.floor(Math.random()*-80000)-1)
-treey.push(Math.floor(Math.random()*py+Math.random()*ny))
-
-}
-var ttl=treex.length
-
-function tree(){
-     var ctxx=ctx.getTransform().e
-var ctxy=ctx.getTransform().f
-  if (trc==1) {
+        }
+        else if(result[i][1].posx<canva.width+pxo && result[i][1].posx>-(window.innerWidth-pxo) &&result[i][1].posy<canva.height+pyo && result[i][1].posy>-(window.innerHeight-pyo)){
+          ctx.fillText(result[i][0],result[i][1].posx+10,result[i][1].posy-2)
+          switch (result[i][1].state) {
+            case 'idle':
+              if(idle_time==30){
+                idle=0
+                idle_time=0
+            }
+                    if(idle==0){ ctx.drawImage(pl,0,0,51,55,result[i][1].posx,result[i][1].posy,50,50)}
+              break;
+              case 'left':
+                gameFrame++
+                if(gameFrame % animation_time == 0){
+                  if(paframe<2) paframe++
+                  else paframe=0
+                }
+                ctx.drawImage(pl,51*(paframe),55,51,55,result[i][1].posx,result[i][1].posy,50,50)
+                break;
+                case 'right':
+                  gameFrame++
+                  if(gameFrame % animation_time == 0){
+                    if(paframe<2) paframe++
+                    else paframe=0
+                  }
+                  ctx.drawImage(pl,51*(paframe),55*2,51,55,result[i][1].posx,result[i][1].posy,50,50)
+                  break;
+                  case 'up':
+                    gameFrame++
+                    if(gameFrame % animation_time == 0){
+                      if(paframe<2) paframe++
+                      else paframe=0
+                    }
+                    ctx.drawImage(pl,51*(paframe),55*3,51,55,result[i][1].posx,result[i][1].posy,50,50)
+                  break;
+                  case 'down':
+                    gameFrame++
+                    if(gameFrame % animation_time == 0){
+                      if(paframe<2) paframe++
+                      else paframe=0
+                    }
+                    ctx.drawImage(pl,51*(paframe),0,51,55,result[i][1].posx,result[i][1].posy,50,50)
+                  break;
+          }
+        }
+       }
+  }
+  attack=()=>{
+      //player
+      for(var i=0;i<Object.keys(players).length;i++){
+        var result = Object.keys(players).map((key) => [key, players[key]]);
+        if(result[i][1].posx<canva.width+pxo && result[i][1].posx>-10-pxo &&result[i][1].posy<canva.height+pyo && result[i][1].posy>-(window.innerHeight-pyo)){
+          if(result[i][0]!=gamertage){
+            if(checkCollision(pxo,pyo,50,50,result[i][1].posx,result[i][1].posy,50,50)==true){
+              health--
+              update(ref(db,'Players/'+result[i][0]),{
+                attacked:'true',
+                health:health
+              })
+            }
+          }
+        }
+       }
     
   }
-for(var a=0;a<ttl;a++){
-
-
-    if(treex[a]+ctxx<canva.width && treex[a]+ctxx>-2 &&treey[a]+ctxy< canva.height && treey[a]+ctxy>-2){   
-
-        if(tree_health[a]==0){
-           woodc++
-           woodx.push(treex[a])
-           woody.push(treey[a])
-tree_health.splice(a,1)
-treex.splice(a,1)
-treey.splice(a,1)
-      }
-
-      ctx.drawImage(tr,treex[a],treey[a],80,110)
-
-     }
-             
-  
-    
-}
-    
-}
-//controls
-
-window.onkeypress=b=>{
-  if (b.key=='w') {
-      controls.up=true
-  }
-  if (b.key=='a') {
-      controls.left=true
-  }
-     if (b.key=='d') {
-      controls.right=true
-  }
-     if (b.key=='s') {
-      controls.down=true
-  }
-     if (b.key=='k') {
-         if(sol==0){
-          attack()
-          sol++
-         }
-         controls.release=false
-    
-  }
-
-  if (b.key=='p') {
-    console.log(ctx.getTransform());
-    console.log(postx);
-  ctx.translate(10,0)
-      trc=1
-  }
-}
-window.onkeyup=b=>{
-  playerState.up=false 
-  playerState.down=false
-  playerState.right=false
-  playerState.left=false
-  playerState.idle=true
-  controls.release=true
-  if (b.key=='w') {
-      controls.up=false 
-  }
-  if (b.key=='a') {
-      controls.left=false
-  }
-     if (b.key=='d') {
-      controls.right=false
-  }
-     if (b.key=='s') {
-      controls.down=false
-  }
-  if (b.key=='k') {
-       sol=0
-      
- 
-}
-if (b.key=='p') {
-  
-      trc=0
-  }
-}
-
-function ctrl() {
-  if(pxo)
-  if(multiplayer==true){
-    
-    if (controls.up==true) {
-      pyo-=10
-      posty-=10
-      ctx.translate(0,10)
-      update(ref(db,'Players/'+gamertage),{
-        posx:pxo,
-        posy:pyo,
-        name:gamertage,
-        state:'up'
-      })
-    
-  }
-    
-  
- else  if (controls.left==true) {
-      // tm('right') 
-      // sm('right')
-      // wm('right')
-      ctx.translate(10,0)
-      postx-=10
-      pxo-=10
-      update(ref(db,'Players/'+gamertage),{
-        posx:pxo,
-        posy:pyo,
-        name:gamertage,
-        state:'left'
-      })
-      // console.log(ctx.getTransform());
-      // playerState.up=false 
-      // playerState.down=false
-      // playerState.right=false
-      // playerState.left=true
-      // playerState.idle=false 
-
-  }
-  else  if (controls.down==true) {
-      // tm('up')  
-      ctx.translate(0,-10)
-      pyo+=10
-      posty+=10
-      update(ref(db,'Players/'+gamertage),{
-        posx:pxo,
-        posy:pyo,
-        name:gamertage,
-        state:'down'
-      })
-      // sm('up')
-      // wm('up')
-      // playerState.up=false 
-      // playerState.down=true
-      // playerState.right=false
-      // playerState.left=false
-      // playerState.idle=false
-
-  }
-  else  if (controls.right==true) {
-      // tm('left')
-      ctx.translate(-10,0)
-      pxo+=10
-      postx+=10
-      update(ref(db,'Players/'+gamertage),{
-        posx:pxo,
-        posy:pyo,
-        name:gamertage,
-        state:'right'
-      })
-      // sm('left') 
-      // wm('left') 
-      //         playerState.up=false 
-      // playerState.down=false
-      // playerState.right=true
-      // playerState.left=false
-      // playerState.idle=false
-    
- 
-  }
-  else{
-    update(ref(db,'Players/'+gamertage),{
-      posx:pxo,
-      posy:pyo,
-      name:gamertage,
-      state:'idle'
-    })
-  }
-  }
-  if(multiplayer==false){
+}else{
+ ctrl=()=>{
     if (controls.up==true) {
       // tm('down')
       // sm('down')
@@ -394,14 +411,14 @@ function ctrl() {
       playerState.right=false
       playerState.left=true
       playerState.idle=false 
-
+  
   }
     if (controls.down==true) {
       // tm('up')  
       ctx.translate(0,-10)
       pyo+=10
       posty+=10
-
+  
       // sm('up')
       // wm('up')
       playerState.up=false 
@@ -409,14 +426,14 @@ function ctrl() {
       playerState.right=false
       playerState.left=false
       playerState.idle=false
-
+  
   }
     if (controls.right==true) {
       // tm('left')
       ctx.translate(-10,0)
       pxo+=10
       postx+=10
-
+  
       // sm('left') 
       // wm('left') 
               playerState.up=false 
@@ -425,172 +442,13 @@ function ctrl() {
       playerState.left=false
       playerState.idle=false
     
- 
+  
   }
-  }
-
-}
-//stone
-stonec=20000//Math.floor(Math.random()*50000)+1
-let smm=0
-for(var i=0;i<stonec;i++){
-   
-   var psy=Math.floor(Math.random()*80000)
-var nsy=Math.floor(Math.random()*-80000)-1
-stonex.push(Math.floor(Math.random()*80000))
-stoney.push(Math.floor(Math.random()*psy+Math.random()*nsy))
-stonex.push(Math.floor(Math.random()*-80000)-1)
-stoney.push(Math.floor(Math.random()*psy+Math.random()*nsy))
-
-}
-var stl=stonex.length
-function stone(){
-     var ctxx=ctx.getTransform().e
-     var ctxy=ctx.getTransform().f
-for(var a=0;a<stl;a++){
-     if(stonex[a]+ctxx<canva.width &&stonex[a]+ctxx>-2 &&stoney[a]+ctxy<canva.height && stoney[a]+ctxy>-2){
-          if (playerx < stonex[a]+ctxx+ 20 && playerx + 34 > stonex[a]+ctxx && playery < stoney[a]+ctxy+ -1 && playery + 70 > stoney[a]+ctxy) {
-               pickbtn.removeAttribute('hidden')
-               if (trc==1) {
-                    stonex.splice(a, 1)
-                    stoney.splice(a, 1)
-                    itemsCount.stones += 1
-               }
-             }
-      
-          ctx.drawImage(st,stonex[a],stoney[a],20,25)
-     }
-    
-    
-}
-    
-}
-//pick
-function pick() {
-  //stone
-
-  for(var a=0;a<stl;a++){
-      if(stonex[a]<canva.width && stonex[a]>-2 && stoney[a]<canva.height && stoney[a]>-2){
-          if(playerx < stonex[a]+20 && playerx+34 > stonex[a] && playery < stoney[a]+-1 && playery+70 > stoney[a]){
-   stonex.splice(a,1)
-   stoney.splice(a,1)
-   itemsCount.stones+=1
-           }
-      }
-  }
-  //wood
-  for(var a=0;a<woodc;a++){
-      if(playerx < woodx[a]+20 && playerx+34 > woodx[a] && playery+70 > woody[a]){
-        
-          if(playerx < woodx[a]+50 && playerx+34 > woodx[a] && playery < woody[a]+10 && playery+70 > woody[a]){
-          
-  woodc--
-   woodx.splice(a,1)
-   woody.splice(a,1)
-   itemsCount.planks+=1
-           }
-      }
-  }
-}
-//players
-
-function player() {
-  if(multiplayer==true){
-    for(var i=0;i<Object.keys(players).length;i++){
-      var result = Object.keys(players).map((key) => [key, players[key]]);
-
- 
-      if(result[i][0]==gamertage){
-        ctx.fillText(result[i][0],result[i][1].posx+10,result[i][1].posy-2)
-        switch (result[i][1].state) {
-          case 'idle':
-            if(idle_time==30){
-              idle=0
-              idle_time=0
-          }
-                  if(idle==0){ ctx.drawImage(pl,0,0,51,55,result[i][1].posx,result[i][1].posy,50,50)}
-            break;
-            case 'left':
-              gameFrame++
-              if(gameFrame % animation_time == 0){
-                if(paframe<2) paframe++
-                else paframe=0
-              }
-              ctx.drawImage(pl,51*(paframe),55,51,55,result[i][1].posx,result[i][1].posy,50,50)
-              break;
-              case 'right':
-                gameFrame++
-                if(gameFrame % animation_time == 0){
-                  if(paframe<2) paframe++
-                  else paframe=0
-                }
-                ctx.drawImage(pl,51*(paframe),55*2,51,55,result[i][1].posx,result[i][1].posy,50,50)
-                break;
-                case 'up':
-                  gameFrame++
-                  if(gameFrame % animation_time == 0){
-                    if(paframe<2) paframe++
-                    else paframe=0
-                  }
-                  ctx.drawImage(pl,51*(paframe),55*3,51,55,result[i][1].posx,result[i][1].posy,50,50)
-                break;
-                case 'down':
-                  gameFrame++
-                  if(gameFrame % animation_time == 0){
-                    if(paframe<2) paframe++
-                    else paframe=0
-                  }
-                  ctx.drawImage(pl,51*(paframe),0,51,55,result[i][1].posx,result[i][1].posy,50,50)
-                break;
-        }
-      }
-      else if(result[i][1].posx<canva.width+pxo && result[i][1].posx>-10-pxo &&result[i][1].posy<canva.height+pyo && result[i][1].posy>-(window.innerHeight-pyo)){
-        ctx.fillText(result[i][0],result[i][1].posx+10,result[i][1].posy-2)
-        switch (result[i][1].state) {
-          case 'idle':
-            if(idle_time==30){
-              idle=0
-              idle_time=0
-          }
-                  if(idle==0){ ctx.drawImage(pl,0,0,51,55,result[i][1].posx,result[i][1].posy,50,50)}
-            break;
-            case 'left':
-              gameFrame++
-              if(gameFrame % animation_time == 0){
-                if(paframe<2) paframe++
-                else paframe=0
-              }
-              ctx.drawImage(pl,51*(paframe),55,51,55,result[i][1].posx,result[i][1].posy,50,50)
-              break;
-              case 'right':
-                gameFrame++
-                if(gameFrame % animation_time == 0){
-                  if(paframe<2) paframe++
-                  else paframe=0
-                }
-                ctx.drawImage(pl,51*(paframe),55*2,51,55,result[i][1].posx,result[i][1].posy,50,50)
-                break;
-                case 'up':
-                  gameFrame++
-                  if(gameFrame % animation_time == 0){
-                    if(paframe<2) paframe++
-                    else paframe=0
-                  }
-                  ctx.drawImage(pl,51*(paframe),55*3,51,55,result[i][1].posx,result[i][1].posy,50,50)
-                break;
-                case 'down':
-                  gameFrame++
-                  if(gameFrame % animation_time == 0){
-                    if(paframe<2) paframe++
-                    else paframe=0
-                  }
-                  ctx.drawImage(pl,51*(paframe),0,51,55,result[i][1].posx,result[i][1].posy,50,50)
-                break;
-        }
-      }
-     }
-  }
-  if(multiplayer==false){
+  
+  
+  
+ }
+ player=()=>{
     if(playerState.idle==true){
       if(idle_time==30){
           idle=0
@@ -631,40 +489,229 @@ if(gameFrame % animation_time == 0){
 }
 ctx.drawImage(pl,51*(paframe),0,51,55,pxo,pyo,50,50)
 }
-  }
-  }
-//attack
-function attack() {
-  if(multiplayer==false){
-    var ctxx=ctx.getTransform().e
-    var ctxy=ctx.getTransform().f
+  
+ }
+ attack=()=>{
+   ctxx=ctx.getTransform().e
+   ctxy=ctx.getTransform().f
     //tree
     for(var a=0;a<ttl;a++){
         if(treex[a]+ctxx<canva.width && treex[a]+ctxx>-2 && treey[a]+ctxy<canva.height && treey[a]+ctxy>-2){
-            if(playerx < treex[a]+ctxx+40 && playerx+34 > treex[a]+ctxx && playery < treey[a]+ctxy+70 && playery+55 > treey[a]+ctxy){
-                tree_health[a]-- 
-             }}
-        
+        if(checkCollision(playerx,playery,50,50,treex[a]+ctxx,treey[a]+ctxy,70,75)==true){
+          tree_health[a]-- 
+            }
     }
-  }
-if(multiplayer==true){
-  //player
-  for(var i=0;i<Object.keys(players).length;i++){
-    var result = Object.keys(players).map((key) => [key, players[key]]);
-    if(result[i][1].posx<canva.width+pxo && result[i][1].posx>-10-pxo &&result[i][1].posy<canva.height+pyo && result[i][1].posy>-(window.innerHeight-pyo)){
-      if(result[i][0]!=gamertage){
-        
-        if(pxo < result[i][1].posx+50 && pxo+50 > result[i][1].posx && pyo < result[i][1].posy+50 && pyo+50 > result[i][1].posy){
-          
-          update(ref(db,'Players/'+result[i][0]),{
-            attc:true
-          })
+  
+ }
+}
+}
+//wood function
+function wood() {
+ ctxx=ctx.getTransform().e
+ ctxy=ctx.getTransform().f
+  let wooda=woodx.length
+    for(var a=0;a<wooda;a++){
+        if(woodx[a]+ctxx<canva.width && woodx[a]+ctxx>-2 && woody[a]+ctxy<canva.height && woody[a]+ctxy>-2){ 
+          // if (playerx < woodx[a]+ctxx+ 50 && playerx +  34> woodx[a] +ctxx&& playery > woody[a]+ctxy-5 &&  playery < woody[a]+ctxy+40) {
+          //   pickbtn.removeAttribute('hidden')
+          //   if (trc==1) {  
+          //     woodc--
+          //     woodx.splice(a, 1)
+          //     woody.splice(a, 1)
+          //     itemsCount.planks += 1
+          //   }
+          // }
+        if(checkCollision(playerx,playery,50,50,woodx[a]+ctxx,woody[a]+ctxy,50,5)==true){
+            pickbtn.removeAttribute('hidden')
+            if (trc==1) {  
+              woodc--
+              woodx.splice(a, 1)
+              woody.splice(a, 1)
+              itemsCount.planks += 1
+            }
         }
-      }
+            ctx.drawImage(wd,woodx[a],woody[a],70,20)
+         }
     }
-   }
+}
+//tree function
+treec=20000//Math.floor(Math.random()*50000)+1
+let amm=0
+for(var i=0;i<treec;i++){
+   
+   var py=Math.floor(Math.random()*80000)
+var ny=Math.floor(Math.random()*-80000)-1
+tree_health.push(2)
+treex.push(Math.floor(Math.random()*80000))
+treey.push(Math.floor(Math.random()*py+Math.random()*ny))
+
+tree_health.push(2)
+treex.push(Math.floor(Math.random()*-80000)-1)
+treey.push(Math.floor(Math.random()*py+Math.random()*ny))
+
+}
+var ttl=treex.length
+
+function tree(){
+ ctxx=ctx.getTransform().e
+ ctxy=ctx.getTransform().f
+ let kla=0
+  if (trc==1) {
+    
+  }
+for(var a=0;a<ttl;a++){
+
+
+      if(treex[a]+ctxx<canva.width && treex[a]+ctxx>-2 &&treey[a]+ctxy< canva.height && treey[a]+ctxy>-2){   
+
+          if(tree_health[a]==0){
+           woodc++
+           woodx.push(treex[a])
+           woody.push(treey[a]+50)
+tree_health.splice(a,1)
+treex.splice(a,1)
+treey.splice(a,1)
+      }
+      ctx.drawImage(tr,treex[a],treey[a],80,110)
+     }
 }
 }
+//controls
+
+window.onkeypress=b=>{
+  if (b.key=='w') {
+      controls.up=true
+  }
+  if (b.key=='a') {
+      controls.left=true
+  }
+     if (b.key=='d') {
+      controls.right=true
+  }
+     if (b.key=='s') {
+      controls.down=true
+  }
+     if (b.key=='k') {
+         if(sol==0){
+          attack()
+          sol++
+         }
+         controls.release=false
+    
+  }
+
+  if (b.key=='p') {
+      trc=1
+  }
+}
+window.onkeyup=b=>{
+  playerState.up=false 
+  playerState.down=false
+  playerState.right=false
+  playerState.left=false
+  playerState.idle=true
+  controls.release=true
+  if (b.key=='w') {
+      controls.up=false 
+  }
+  if (b.key=='a') {
+      controls.left=false
+  }
+     if (b.key=='d') {
+      controls.right=false
+  }
+     if (b.key=='s') {
+      controls.down=false
+  }
+  if (b.key=='k') {
+       sol=0
+      
+ 
+}
+if (b.key=='p') {
+  
+      trc=0
+  }
+}
+
+
+//stone
+stonec=20000//Math.floor(Math.random()*50000)+1
+let smm=0
+for(var i=0;i<stonec;i++){
+   
+   var psy=Math.floor(Math.random()*80000)
+var nsy=Math.floor(Math.random()*-80000)-1
+stonex.push(Math.floor(Math.random()*80000))
+stoney.push(Math.floor(Math.random()*psy+Math.random()*nsy))
+stonex.push(Math.floor(Math.random()*-80000)-1)
+stoney.push(Math.floor(Math.random()*psy+Math.random()*nsy))
+
+}
+var stl=stonex.length
+function stone(){
+   ctxx=ctx.getTransform().e
+   ctxy=ctx.getTransform().f
+for(var a=0;a<stl;a++){
+     if(stonex[a]+ctxx<canva.width &&stonex[a]+ctxx>-2 &&stoney[a]+ctxy<canva.height && stoney[a]+ctxy>-2){
+          // if (playerx < stonex[a]+ctxx+ 20 && playerx + 34 > stonex[a]+ctxx && playery < stoney[a]+ctxy+ -1 && playery + 70 > stoney[a]+ctxy) {
+          //      pickbtn.removeAttribute('hidden')
+          //      if (trc==1) {
+          //           stonex.splice(a, 1)
+          //           stoney.splice(a, 1)
+          //           itemsCount.stones += 1
+          //      }
+          //    }
+          if(checkCollision(playerx,playery,50,50,stonex[a]+ctxx,stoney[a]+ctxy,20,10)==true){
+               pickbtn.removeAttribute('hidden')
+               if (trc==1) {
+                    stonex.splice(a, 1)
+                    stoney.splice(a, 1)
+                    itemsCount.stones += 1
+               }
+       }
+          ctx.drawImage(st,stonex[a],stoney[a],20,25)
+     }
+    
+    
+}
+    
+}
+//pick
+function pick() {
+  //stone
+
+  for(var a=0;a<stl;a++){
+      if(stonex[a]+ctxx<canva.width && stonex[a]+ctxx>-2 && stoney[a]+ctxy<canva.height && stoney[a]+ctxy>-2){
+  //         if(playerx < stonex[a]+20 && playerx+34 > stonex[a] && playery < stoney[a]+-1 && playery+70 > stoney[a]){
+  //  stonex.splice(a,1)
+  //  stoney.splice(a,1)
+  //  itemsCount.stones+=1
+  //          }
+  if(checkCollision(playerx,playery,50,50,stonex[a]+ctxx,stoney[a]+ctxy,20,-100)==true){
+       stonex.splice(a,1)
+   stoney.splice(a,1)
+   itemsCount.stones+=1
+   console.log('fdk');
+  }
+      }
+      
+  }
+  //wood
+  for(var a=0;a<woodc;a++){
+      if(playerx < woodx[a]+20 && playerx+34 > woodx[a] && playery+70 > woody[a]){
+        
+          if(playerx < woodx[a]+50 && playerx+34 > woodx[a] && playery < woody[a]+10 && playery+70 > woody[a]){
+          
+  woodc--
+   woodx.splice(a,1)
+   woody.splice(a,1)
+   itemsCount.planks+=1
+           }
+      }
+  }
+}
+//attack
 //adding sprites
 var tr=document.getElementById('tree')
 var pl=document.getElementById('player')
@@ -673,22 +720,9 @@ var wd=document.getElementById('wood')
 var mgrnd=document.getElementById('mgrnd')
 var grnd=document.getElementById('background')
 // Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyDhHoaC7-scyj9D1mLflGx9kq3-nNlnCoA",
-  authDomain: "game-7fbdb.firebaseapp.com",
-  databaseURL: "https://game-7fbdb-default-rtdb.firebaseio.com",
-  projectId: "game-7fbdb",
-  storageBucket: "game-7fbdb.appspot.com",
-  messagingSenderId: "637092416990",
-  appId: "1:637092416990:web:51b8f2c03d6d57093ae14f"
-};
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
 //database functions
-let db=getDatabase()
-let refDb=ref(db)
-let abv=0
+
 class database{
 write(px,py,stat,h,at){
   set(ref(db,'Players/'+gamertage),{
@@ -697,7 +731,6 @@ write(px,py,stat,h,at){
     state:stat,
     health:3
   })
-  console.log('dj');
 }
 read(){
  get(child(refDb,'Players/mahadi')).then(function(snap){
@@ -706,8 +739,7 @@ read(){
 }
 }
 let server=new database()
-
-//  ctx.imageSmoothingEnabled=false;
+ 
 if(window.location.search=='?true'){
   multiplayer=true
   gamertage=prompt('Enter your gamertage !','')
@@ -735,35 +767,48 @@ if(window.location.search=='?true'){
 onValue(ref(db,'Players/'),(a)=>{
   let hh=a.val().name
   players=a.val()
-})
-       function multi(){
-      ctrl()
-        if(players[gamertage]){
-          if(players[gamertage].attc==true){
-            alert("You are dead !You can't rejoin fool ! (-:")
-          }
-        }
+  if(players[gamertage].attacked==true){
+    setTimeout(()=>{
+      update(ref(db,'Players/'+gamertage),{
+        attacked:'false'
+      })
+    },2000)
+  }
 
+})
+ctx.imageSmoothingEnabled=false
+       function multi(){
+        //  if(players[gamertage].health){
+        //    if(players[gamertage].health==0){
+        //      alert('You are dead ! Contact with the developer to respwan !')
+        //    }
+        //  }
+          ctrl()
           ctx.clearRect(-1000000,-1000000,5000000,5000000) 
           ctx.fillText(`PosX:${pxo} PosY:${pyo}`,postx+40,posty+50)
           player()
-  requestAnimationFrame(multi)
+          requestAnimationFrame(multi)
        }
        multi()
 }else{
+  // let then=Date.now()
+  pxo=canva.width / 2
+  pyo=canva.height / 2
   function main(){
-    pickbtn.setAttribute('hidden','')     
-    ctx.clearRect(-1000000,-1000000,5000000,5000000)
-    ctx.fillText(`Planks:${itemsCount.planks}`,postx+40,posty+50)
-    ctx.fillText(`Stones:${itemsCount.stones}`,pxo-300,pyo-250)
- 
-    ctrl()
-    stone()
-    wood()
-    player(0)
-    tree()
+    // let now=Date.now()
+    pickbtn.setAttribute('hidden','')
+      // then=Date.now()
+      ctx.clearRect(-1000000,-1000000,5000000,5000000)
+      ctx.fillText(`Planks:${itemsCount.planks}`,postx+40,posty+50)
+      ctx.fillText(`Stones:${itemsCount.stones}`,pxo-300,pyo-250)
+      ctrl()
+      stone()
+      wood()
+      player(0)
+      tree()
+
+    
     requestAnimationFrame(main)
-        }
+}
         main()
 }
-
