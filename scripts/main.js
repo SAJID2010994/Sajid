@@ -801,15 +801,17 @@ if(window.location.search=='?true'){
 onValue(ref(db,'Players/'),(a)=>{
   let hh=a.val().name
   players=a.val()
-  if(players[gamertage].attacked==true){
-    // alert('fjj')
-    controls.attacked=true
-    setTimeout(()=>{
-update(ref(db,'Players/'+gamertage),{
-  attacked:false
-})
-controls.attacked=false
-    },10)
+  if(players[gamertage].attacked){
+    if(players[gamertage.attacked]==true){
+      // alert('fjj')
+      controls.attacked=true
+      setTimeout(()=>{
+  update(ref(db,'Players/'+gamertage),{
+    attacked:false
+  })
+  controls.attacked=false
+      },10)
+    }
 
 }})
 ctx.imageSmoothingEnabled=false 
