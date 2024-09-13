@@ -77,6 +77,7 @@ let controls={
     up:false,
     down:false,
     release:false,
+    attacked:false
 }
 let chi=false
 let paframe=0
@@ -247,14 +248,23 @@ if(window.location.search=='?true'){
           // playerState.idle=false
         
      
-      }
-      else{
+      }else if(controls.attacked==true){
+        ctx.translate(30,0)
+        postx-=30
+        pxo-=30
+        update(ref(db,'Players/'+gamertage),{
+          posx:pxo,
+          posy:pyo,
+          name:gamertage,
+          state:'idle'
+        }) 
+      }else{
               update(ref(db,'Players/'+gamertage),{
             posx:pxo,
             posy:pyo,
             name:gamertage,
             state:'idle'
-          })   
+          }) 
       }
   }
   player=()=>{
@@ -303,18 +313,19 @@ if(window.location.search=='?true'){
                     ctx.drawImage(pl,51*(paframe),0,51,55,result[i][1].posx,result[i][1].posy,50,50)
                   break;
                   }
-                  if(players[gamertage].attacked){
-                    if(players[gamertage].attacked=="true"){
-                      ctx.translate(30,0)
-                      postx-=30
-                      pxo-=30
-                      update(ref(db,'Players/'+gamertage),{
-                        posx:pxo,
-                        name:gamertage
-                      })
-                      // ctx.drawImage(pl,0,0,51,55,result[i][1].posx,result[i][1].posy,50,50)
-            }
-          }
+          //         if(players[gamertage].attacked==true){
+          //           // alert('dfj')
+          //           controls.attacked=true
+          //             // ctx.translate(30,0)
+          //             // postx-=30
+          //             // pxo-=30
+          //             // update(ref(db,'Players/'+gamertage),{
+          //             //   posx:pxo,
+          //             //   name:gamertage
+          //             // })
+          //             // ctx.drawImage(pl,0,0,51,55,result[i][1].posx,result[i][1].posy,50,50)
+            
+          // }
         }
         else if(result[i][1].posx<canva.width+pxo && result[i][1].posx>-(window.innerWidth-pxo) &&result[i][1].posy<canva.height+pyo && result[i][1].posy>-(window.innerHeight-pyo)){
           ctx.fillText(result[i][0],result[i][1].posx+10,result[i][1].posy-2)
@@ -359,6 +370,19 @@ if(window.location.search=='?true'){
                     ctx.drawImage(pl,51*(paframe),0,51,55,result[i][1].posx,result[i][1].posy,50,50)
                   break;
           }
+//           if(players[gamertage].attacked==true){
+//      controls.attacked=true
+//             // alert('ulalal')
+//             // ctx.translate(30,0)
+//             // postx-=30
+//             // pxo-=30
+//             // update(ref(db,'Players/'+gamertage),{
+//             //   posx:pxo,
+//             //   name:gamertage
+//             // })
+//             // ctx.drawImage(pl,0,0,51,55,result[i][1].posx,result[i][1].posy,50,50)
+  
+// }
         }
        }
   }
@@ -366,19 +390,17 @@ if(window.location.search=='?true'){
       //player
       for(var i=0;i<Object.keys(players).length;i++){
         var result = Object.keys(players).map((key) => [key, players[key]]);
-        if(result[i][1].posx<canva.width+pxo && result[i][1].posx>-10-pxo &&result[i][1].posy<canva.height+pyo && result[i][1].posy>-(window.innerHeight-pyo)){
           if(result[i][0]!=gamertage){
+            // console.log(result)
             if(checkCollision(pxo,pyo,50,50,result[i][1].posx,result[i][1].posy,50,50)==true){
-              health--
               update(ref(db,'Players/'+result[i][0]),{
-                attacked:'true',
-                health:health
+                attacked: true
               })
+            
             }
           }
-        }
+        
        }
-    
   }
 }else{
  ctrl=()=>{
@@ -563,7 +585,6 @@ for(var a=0;a<ttl;a++){
 
 
       if(treex[a]+ctxx<canva.width && treex[a]+ctxx>-2 &&treey[a]+ctxy< canva.height && treey[a]+ctxy>-2){   
-
           if(tree_health[a]==0){
            woodc++
            woodx.push(treex[a])
@@ -751,6 +772,19 @@ if(window.location.search=='?true'){
      posty=ctx.getTransform().f*-1
     pxo=snap.val().posx
     pyo=snap.val().posy
+    function multi(){
+      //  if(players[gamertage].health){
+      //    if(players[gamertage].health==0){
+      //      alert('You are dead ! Contact with the developer to respwan !')
+      //    }
+      //  }
+      ctx.clearRect(-1000000,-1000000,5000000,5000000) 
+        ctx.fillText(`PosX:${pxo} PosY:${pyo}`,postx+40,posty+50)
+        player()
+        ctrl()
+        requestAnimationFrame(multi)
+     }
+     multi()
   }else{
      pxo=canva.width / 2
  pyo=canva.height / 2
@@ -768,28 +802,17 @@ onValue(ref(db,'Players/'),(a)=>{
   let hh=a.val().name
   players=a.val()
   if(players[gamertage].attacked==true){
+    // alert('fjj')
+    controls.attacked=true
     setTimeout(()=>{
-      update(ref(db,'Players/'+gamertage),{
-        attacked:'false'
-      })
-    },2000)
-  }
-
+update(ref(db,'Players/'+gamertage),{
+  attacked:false
 })
-ctx.imageSmoothingEnabled=false
-       function multi(){
-        //  if(players[gamertage].health){
-        //    if(players[gamertage].health==0){
-        //      alert('You are dead ! Contact with the developer to respwan !')
-        //    }
-        //  }
-          ctrl()
-          ctx.clearRect(-1000000,-1000000,5000000,5000000) 
-          ctx.fillText(`PosX:${pxo} PosY:${pyo}`,postx+40,posty+50)
-          player()
-          requestAnimationFrame(multi)
-       }
-       multi()
+controls.attacked=false
+    },10)
+
+}})
+ctx.imageSmoothingEnabled=false 
 }else{
   // let then=Date.now()
   pxo=canva.width / 2
